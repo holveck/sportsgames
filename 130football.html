@@ -580,6 +580,8 @@
         <img class="share-menu-preview" id="share-menu-preview" src="" alt="Your 13-0 results card">
         <div class="share-menu-list">
           <button class="share-menu-btn" id="share-native-btn" style="display:none;"><span class="icon">&#8599;</span> Share</button>
+          <button class="share-menu-btn" id="share-x-btn" style="display:none;"><span class="icon">X</span> Share on X</button>
+          <button class="share-menu-btn" id="share-facebook-btn" style="display:none;"><span class="icon">f</span> Share on Facebook</button>
           <button class="share-menu-btn" id="share-download-btn"><span class="icon">&#11015;</span> Download image</button>
         </div>
       </div>
@@ -17563,7 +17565,7 @@ const SCHOOL_COLORS = {
           const colorInfo = SCHOOL_COLORS[content.school];
           if (colorInfo && colorInfo.usable) {
             el.style.backgroundColor = hexToRgba(colorInfo.tint, colorInfo.alpha != null ? colorInfo.alpha : 0.1);
-            el.style.borderColor = colorInfo.border || colorInfo.tint;
+            el.style.borderColor = '';
           } else {
             el.style.backgroundColor = '';
             el.style.borderColor = '';
@@ -17794,6 +17796,8 @@ const SCHOOL_COLORS = {
     const shareMenuClose = document.getElementById('share-menu-close');
     const shareMenuPreview = document.getElementById('share-menu-preview');
     const shareNativeBtn = document.getElementById('share-native-btn');
+    const shareXBtn = document.getElementById('share-x-btn');
+    const shareFacebookBtn = document.getElementById('share-facebook-btn');
     const shareDownloadBtn = document.getElementById('share-download-btn');
 
     let currentShareBlob = null;
@@ -17813,10 +17817,16 @@ const SCHOOL_COLORS = {
         shareMenuPreview.src = currentShareBlobUrl;
 
         const file = new File([blob], '13-0-my-team.png', { type: 'image/png' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        const nativeAvailable = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+
+        if (nativeAvailable) {
           shareNativeBtn.style.display = '';
+          shareXBtn.style.display = 'none';
+          shareFacebookBtn.style.display = 'none';
         } else {
           shareNativeBtn.style.display = 'none';
+          shareXBtn.style.display = '';
+          shareFacebookBtn.style.display = '';
         }
 
         shareMenuOverlay.style.display = 'flex';
@@ -17857,6 +17867,22 @@ const SCHOOL_COLORS = {
       } catch (err) {
         // User cancelled or share failed; keep menu open
       }
+    });
+
+    shareXBtn.addEventListener('click', () => {
+      downloadShareImage();
+      const text = encodeURIComponent(shareCaption());
+      const url = encodeURIComponent(STORY_URL);
+      const intentUrl = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url;
+      window.open(intentUrl, '_blank', 'noopener');
+    });
+
+    shareFacebookBtn.addEventListener('click', () => {
+      downloadShareImage();
+      const quote = encodeURIComponent(shareCaption());
+      const url = encodeURIComponent(STORY_URL);
+      const intentUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url + '&quote=' + quote;
+      window.open(intentUrl, '_blank', 'noopener');
     });
 
     shareDownloadBtn.addEventListener('click', () => {
